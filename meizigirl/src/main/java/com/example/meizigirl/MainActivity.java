@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         // mListView = (ListView) findViewById(R.id.list_view);
         ButterKnife.bind(this); //绑定Activity
-        sendSyncRequest();
+        //sendSyncRequest();
         sendAsyncRequest();
     }
 
@@ -46,10 +46,10 @@ public class MainActivity extends AppCompatActivity {
            @Override
            public void onResponse(Call call, Response response) throws IOException {
                String result = response.body().string();
-               Log.d(TAG, "sendAsyncRequest: "+result);
+               Log.d(TAG, "onResponse: "+result);
            }
        });
-
+        Log.d(TAG, "sendAsyncRequest: ");
     }
 
     private void sendSyncRequest() {
