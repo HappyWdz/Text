@@ -5,11 +5,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -18,6 +20,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import jp.wasabeef.glide.transformations.CropCircleTransformation;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -30,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.list_view)
     ListView mListView;
 
+    private boolean isLoading =false;
     //数据集合
     private List<ResultBean.ResultsBean> mListData =new ArrayList<ResultBean.ResultsBean>();
 
@@ -42,8 +46,68 @@ public class MainActivity extends AppCompatActivity {
         // mListView = (ListView) findViewById(R.id.list_view);
         ButterKnife.bind(this); //绑定Activity
         mListView.setAdapter(mBaseAdapter);
+        mListView.setOnScrollListener(mOnScrollListener);
         //sendSyncRequest();
         sendAsyncRequest();
+    }
+
+    private AbsListView.OnScrollListener mOnScrollListener =new AbsListView.OnScrollListener() {
+        @Override
+        public void onScrollStateChanged(AbsListView view, int scrollState) {
+            //当Listview是个idle ,判断是否滑动到底部
+            if (scrollState ==SCROLL_STATE_IDLE){
+                //还有判断是否正在加载数据,如果正在加载数据也不要发送网络请求不要
+                if (mListView.getLastVisiblePosition() == mListData.size()-1 && !isLoading){
+                    //滑动到底部
+                    //加载数据
+                    loadMoreData();
+                }
+            }
+        }
+
+        @Override
+        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+        }
+    };
+
+    private void loadMoreData() {
+        isLoading =true;
+        OkHttpClient okHttpClient =new OkHttpClient();
+        //创建一个网络请求
+        int nextIndex =mListData.size()/10+1; //加载更多数据下标
+        String url ="http://gank.io/api/data/%E7%A6%8F%E5%88%A9/10/"+nextIndex;
+        Request request =new Request.Builder().get().url(url).build();
+        okHttpClient.newCall(request).enqueue(new Callback() {
+            //异步请求 ,不需要等到网络结果返回,就执行后面的代码,okhttply内部会在子线程执行网络请求,返回结果
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            /**
+             *
+             * 在子线程被调用
+             */
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String result = response.body().string();
+                ResultBean resultBean = mGson.fromJson(result, ResultBean.class);
+                //Log.d(TAG, "onResponse: "+resultBean.getResults().get(0).getUrl());
+
+                //将网络结果加入数据集合
+                mListData.addAll(resultBean.getResults());
+                //在主线程刷新
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //通知Adapter刷新列表
+                        mBaseAdapter.notifyDataSetChanged();
+                    }
+                });
+                isLoading =false;
+            }
+        });
     }
 
     private void sendAsyncRequest() {
@@ -137,6 +201,11 @@ public class MainActivity extends AppCompatActivity {
             ResultBean.ResultsBean resultsBean = mListData.get(position);//拿到对应位置的数据
             //更新发布时间
             viewHolder.mTextView.setText(resultsBean.getPublishedAt());
+            //刷新图片
+            String url =resultsBean.getUrl();
+            Glide.with(MainActivity.this).load(url).centerCrop()
+                    .bitmapTransform(new CropCircleTransformation(MainActivity.this))
+                    .into(viewHolder.mImageView);
             return convertView;
         }
     };
