@@ -1,1 +1,1 @@
-include ':app', ':textappmodule', ':anroidlib'
+include ':app', ':textappmodule', ':anroidlib', ':meizigirl'

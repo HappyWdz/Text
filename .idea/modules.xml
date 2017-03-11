@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/MyApplication.iml" filepath="$PROJECT_DIR$/MyApplication.iml" />
       <module fileurl="file://$PROJECT_DIR$/anroidlib/anroidlib.iml" filepath="$PROJECT_DIR$/anroidlib/anroidlib.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/meizigirl/meizigirl.iml" filepath="$PROJECT_DIR$/meizigirl/meizigirl.iml" />
       <module fileurl="file://$PROJECT_DIR$/textappmodule/textappmodule.iml" filepath="$PROJECT_DIR$/textappmodule/textappmodule.iml" />
     </modules>
   </component>
